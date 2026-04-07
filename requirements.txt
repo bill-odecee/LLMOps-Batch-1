@@ -4,3 +4,4 @@ langchain-community
 google-genai
 streamlit
 ipykernel
+datetime
