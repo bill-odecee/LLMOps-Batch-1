@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Iterable, List
-# from fastapi import File, UploadFile, HTTPException
+from fastapi import File, UploadFile, HTTPException
 from langchain_classic.schema import Document
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
 from logger import GLOBAL_LOGGER as log
@@ -43,15 +43,15 @@ def concat_for_analysis(docs: List[Document]) -> str:
 #     right = concat_for_analysis(act_docs)
 #     return f"<<REFERENCE_DOCUMENTS>>\n{left}\n\n<<ACTUAL_DOCUMENTS>>\n{right}"
 
-# # ---------- Helpers ----------
-# class FastAPIFileAdapter:
-#     """Adapt FastAPI UploadFile -> .name + .getbuffer() API"""
-#     def __init__(self, uf: UploadFile):
-#         self._uf = uf
-#         self.name = uf.filename
-#     def getbuffer(self) -> bytes:
-#         self._uf.file.seek(0)
-#         return self._uf.file.read()
+# ---------- Helpers ----------
+class FastAPIFileAdapter:
+    """Adapt FastAPI UploadFile -> .name + .getbuffer() API"""
+    def __init__(self, uf: UploadFile):
+        self._uf = uf
+        self.name = uf.filename
+    def getbuffer(self) -> bytes:
+        self._uf.file.seek(0)
+        return self._uf.file.read()
 
 def read_pdf_via_handler(handler, path: str) -> str:
     if hasattr(handler, "read_pdf"):
