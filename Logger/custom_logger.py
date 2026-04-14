@@ -1,21 +1,57 @@
-import logging       # Python's built-in logging module (used internally by structlog as backend)
-import os            # OS module for file path operations and directory creation
-from datetime import datetime  # datetime class to generate timestamps for log filenames
-import structlog     # Structured logging library — supports key-value pairs in log messages (e.g., user_id=123)
+import logging
+import os
+import sys
+from datetime import datetime
+import structlog
+
 
 class CustomLogger:
-    def __init__(self, log_dir="logs"):  # Constructor with a default log directory name "logs"
-        #Ensure logs directory exists
-        self.log_dir = os.path.join(os.getcwd(), log_dir)  # Build absolute path: <current_working_directory>/logs
-        os.makedirs(self.log_dir, exist_ok=True)  # Create the logs directory if it doesn't already exist (no error if it does)
-        # Timestamped log file (for persistence)
-        log_file = f"{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.log"  # Generate a unique log filename using current timestamp, e.g., "2026_04_08_10_30_00.log"
-        self.log_file_path = os.path.join(self.log_dir, log_file)  # Build full path to the log file, e.g., "/project/logs/2026_04_08_10_30_00.log"
+    def __init__(self, log_dir="logs", level=logging.INFO):
+        self.log_dir = os.path.join(os.getcwd(), log_dir)
+        os.makedirs(self.log_dir, exist_ok=True)
 
-    def get_logger(self, name=__file__):  # Returns a structlog logger; defaults to this file's name if no name is provided
-        return structlog.get_logger(os.path.basename(name))  # Create and return a structlog logger named after the basename of the file (e.g., "custom_logger.py")
-    
-if __name__ == "__main__":  # Only runs when this file is executed directly (not when imported as a module)
-    logger = CustomLogger().get_logger(__file__)  # Create a CustomLogger instance, set up the log directory/file, then get a structlog logger named after this file
-    logger.info("This is an info message", user_id=12345, filename="report.pdf")  # Log an INFO-level message with structured key-value context (user_id and filename)
-    logger.error("This is an error message", error="File not found", user_id=12345)  # Log an ERROR-level message with structured context (error description and user_id)
+        log_file = f"{datetime.now().strftime('%Y_%m_%d')}.log"
+        self.log_file_path = os.path.join(self.log_dir, log_file)
+
+        self._configure_structlog(level)
+
+    def _configure_structlog(self, level):
+        # 1. Standard Python logging setup (The Backend)
+        logging.basicConfig(
+            level=level,
+            format="%(message)s",
+            handlers=[
+                logging.FileHandler(self.log_file_path),  # Writes to your file
+                logging.StreamHandler(sys.stdout),  # Also prints to console
+            ],
+        )
+
+        # 2. Structlog configuration (The Frontend)
+        structlog.configure(
+            processors=[
+                structlog.contextvars.merge_contextvars,
+                structlog.processors.add_log_level,
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.StackInfoRenderer(),
+                structlog.processors.format_exc_info,
+                # Use JSON for files, but we'll use ConsoleRenderer for now for readability
+                structlog.dev.ConsoleRenderer(),
+            ],
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            wrapper_class=structlog.stdlib.BoundLogger,
+            cache_logger_on_first_use=True,
+        )
+
+    def get_logger(self, name=None):
+        # Use the provided name or fall back to the calling module
+        return structlog.get_logger(name or "app_logger")
+
+
+# Usage
+if __name__ == "__main__":
+    # Initialize ONCE at the start of your app
+    log_manager = CustomLogger()
+    logger = log_manager.get_logger("document_portal")
+
+    logger.info("Service started", version="1.0.0")
+    logger.error("Upload failed", user_id=123, error="Timeout")

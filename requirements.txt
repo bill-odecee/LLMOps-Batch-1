@@ -23,3 +23,6 @@ pandas
 pyyaml
 pydantic
 jinja2
+langchain_google_genai
+pytest
+pytest-cov
