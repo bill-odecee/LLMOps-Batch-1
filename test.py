@@ -1,9 +1,9 @@
 # # Test code for document ingestion and analysis using a PDFHandler and DocumentAnalyzer
 
-# import os
-# from  pathlib import Path
-# from src.docanalyzer.data_analysis import DocumentAnalyzer
-# from src.document_ingestion.data_ingestion import DocHandler       # Your PDFHandler class
+import os
+from pathlib import Path
+from src.docanalyzer.data_analysis import DocumentAnalyzer
+from src.document_ingestion.data_ingestion import DocHandler  # Your PDFHandler class
 
 # # Path to the PDF you want to test
 # PDF_PATH = r"/Users/2099070/Documents/Cognizant/LLMOps Batch 1/data/attention.pdf"
@@ -25,7 +25,7 @@
 #         dummy_pdf = DummyFile(PDF_PATH)
 
 #         handler = DocHandler(session_id="test_ingestion_analysis")
-        
+
 #         saved_path = handler.save_pdf(dummy_pdf)
 #         print(f"PDF saved at: {saved_path}")
 
@@ -35,7 +35,7 @@
 #         # ---------- STEP 2: DATA ANALYSIS ----------
 #         print("Starting metadata analysis...")
 #         analyzer = DocumentAnalyzer()  # Loads LLM + parser
-        
+
 #         analysis_result = analyzer.analyze_document(text_content)
 
 #         #--------- STEP 3: DISPLAY RESULTS ----------
@@ -48,7 +48,6 @@
 
 # if __name__ == "__main__":
 #     main()
-
 
 
 # # Testing code for document comparison using LLMs
@@ -93,7 +92,7 @@
 #     # ---- Step 2: Run LLM comparison ---- #
 #     llm_comparator = DocumentComparerLLM()
 #     df = llm_comparator.compare_documents(combined_text)
-    
+
 #     print("\n Comparison DataFrame:\n")
 #     pd.set_option('display.max_colwidth', None)
 #     pd.set_option('display.max_rows', None)
@@ -101,7 +100,7 @@
 
 # if __name__ == "__main__":
 #     test_compare_documents()
-    
+
 
 # # Testing code for document chat functionality
 
@@ -117,7 +116,7 @@
 # # def test_conversational_rag_on_pdf(pdf_path:str, question:str):
 # #     try:
 # #         model_loader = ModelLoader()
-        
+
 # #         if FAISS_INDEX_PATH.exists():
 # #             print("Loading existing FAISS index...")
 # #             embeddings = model_loader.load_embeddings()
@@ -130,17 +129,17 @@
 # #                 uploaded_files = [f]
 # #                 ingestor = SingleDocIngestor()
 # #                 retriever = ingestor.ingest_files(uploaded_files)
-                
+
 # #         print("Running Conversational RAG...")
 # #         session_id = "test_conversational_rag"
 # #         rag = ConversationalRAG(retriever=retriever, session_id=session_id)
 # #         response = rag.invoke(question)
 # #         print(f"\nQuestion: {question}\nAnswer: {response}")
-                    
+
 # #     except Exception as e:
 # #         print(f"Test failed: {str(e)}")
 # #         sys.exit(1)
-    
+
 # # if __name__ == "__main__":
 # #     # Example PDF path and question
 # #     pdf_path = "data\\single_document_chat\\NIPS-2017-attention-is-all-you-need-Paper.pdf"
@@ -149,81 +148,73 @@
 # #     if not Path(pdf_path).exists():
 # #         print(f"PDF file does not exist at: {pdf_path}")
 # #         sys.exit(1)
-    
+
 # #     # Run the test
 # #     test_conversational_rag_on_pdf(pdf_path, question)
-    
-    
-## testing for multidoc chat
-# import sys
-# import time
-# from pathlib import Path
-# from src.document_ingestion.data_ingestion import ChatIngestor
-# from src.multidocchat.retrieval import ConversationalRAG
 
-# def test_document_ingestion_and_rag():
-#     try:
-#         test_files = [
-#             "/Users/2099070/Documents/Cognizant/LLMOps Batch 1/data/multi_doc_chat/ad095e35.pdf",
-#         ]
-        
-#         uploaded_files = []
-        
-#         for file_path in test_files:
-#             if Path(file_path).exists():
-#                 uploaded_files.append(open(file_path, "rb"))
-#             else:
-#                 print(f"File does not exist: {file_path}")
-                
-#         if not uploaded_files:
-#             print("No valid files to upload.")
-#             sys.exit(1)
-            
-#         ingestor = ChatIngestor()
-        
-#         retriever = ingestor.built_retriver(uploaded_files)
-        
-#         for f in uploaded_files:
-#             f.close()
-                
-#         session_id = "test_multi_doc_chat"
-        
-#         rag = ConversationalRAG(session_id=session_id, retriever=retriever)
-        
-#         question = "What is this document about?"
-        
-#         for attempt in range(3):
-#             try:
-#                 answer = rag.invoke(question)
-#                 break
-#             except Exception:
-#                 if attempt < 2:
-#                     print(f"Attempt {attempt+1} failed, retrying in 5s...")
-#                     time.sleep(5)
-#                 else:
-#                     raise
-        
-#         print("\n Question:", question)
-        
-#         print("Answer:", answer)
-        
-#         if not uploaded_files:
-#             print("No valid files to upload.")
-#             sys.exit(1)
-            
-#     except Exception as e:
-#         print(f"Test failed: {str(e)}")
-#         sys.exit(1)
-        
-# if __name__ == "__main__":
-#     test_document_ingestion_and_rag()
-    
-    
-    
-# Use this code snippet in your app.
-# If you need more information about configurations
-# or implementing the sample code, visit the AWS docs:
-# https://aws.amazon.com/developer/language/python/
+
+## testing for multidoc chat
+import sys
+import time
+from pathlib import Path
+from src.document_ingestion.data_ingestion import ChatIngestor
+from src.multidocchat.retrieval import ConversationalRAG
+
+
+def test_document_ingestion_and_rag():
+    try:
+        test_files = [
+            "/Users/2099070/Documents/Cognizant/LLMOps Batch 1/data/multi_doc_chat/ad095e35.pdf",
+        ]
+
+        uploaded_files = []
+
+        for file_path in test_files:
+            if Path(file_path).exists():
+                uploaded_files.append(open(file_path, "rb"))
+            else:
+                print(f"File does not exist: {file_path}")
+
+        if not uploaded_files:
+            print("No valid files to upload.")
+            sys.exit(1)
+
+        ingestor = ChatIngestor()
+
+        retriever = ingestor.built_retriver(uploaded_files)
+
+        for f in uploaded_files:
+            f.close()
+
+        session_id = "test_multi_doc_chat"
+
+        rag = ConversationalRAG(session_id=session_id, retriever=retriever)
+
+        question = "What is this document about?"
+
+        answer = rag.invoke(question)
+
+        print("\n Question:", question)
+
+        print("Answer:", answer)
+
+        if not uploaded_files:
+            print("No valid files to upload.")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"Test failed: {str(e)}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    test_document_ingestion_and_rag()
+
+
+# # Use this code snippet in your app.
+# # If you need more information about configurations
+# # or implementing the sample code, visit the AWS docs:
+# # https://aws.amazon.com/developer/language/python/
 
 # import boto3
 # from botocore.exceptions import ClientError
@@ -253,7 +244,6 @@
 #     secret = get_secret_value_response['SecretString']
 
 #     # Your code goes here.
-
 
 
 # {
@@ -289,12 +279,12 @@
 #           "name": "GROQ_API_KEY",
 #           "valueFrom": "arn:aws:secretsmanager:ap-southeast-2:459497895986:secret:api_keys-nZTtj8"
 #         },
-        
+
 #         {
 #           "name": "GOOGLE_API_KEY",
 #           "valueFrom": "arn:aws:secretsmanager:ap-southeast-2:459497895986:secret:api_keys-nZTtj8"
 #         }
-        
+
 #       ],
 #       "logConfiguration": {
 #         "logDriver": "awslogs",

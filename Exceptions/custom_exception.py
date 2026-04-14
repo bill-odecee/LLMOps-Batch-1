@@ -1,66 +1,63 @@
 import sys
 import traceback
-from typing import Optional, cast
+from typing import Optional, Any
+
 
 class DocumentPortalException(Exception):
-    def __init__(self, error_message, error_details: Optional[object] = None):
-        # Normalize message
-        if isinstance(error_message, BaseException):
-            norm_msg = str(error_message)
+    """
+    A custom exception that captures specific context (file, line, traceback)
+    automatically from the current execution context.
+    """
+
+    def __init__(
+        self, message: str, original_exception: Optional[BaseException] = None
+    ):
+        self.error_message = message
+        self.original_exception = original_exception
+
+        # Capture the current exception info if not provided
+        exc_type, exc_value, exc_tb = sys.exc_info()
+
+        # If an explicit exception was passed, use its traceback instead
+        if isinstance(original_exception, BaseException):
+            exc_type = type(original_exception)
+            exc_value = original_exception
+            exc_tb = original_exception.__traceback__
+
+        # Extract location info using the traceback module safely
+        if exc_tb:
+            # get_lines() or walk_tb can find the tip of the error
+            summary = traceback.extract_tb(exc_tb)[-1]
+            self.file_name = summary.filename
+            self.lineno = summary.lineno
         else:
-            norm_msg = str(error_message)
+            self.file_name = "<unknown>"
+            self.lineno = -1
 
-        # Resolve exc_info (supports: sys module, Exception object, or current context)
-        exc_type = exc_value = exc_tb = None
-        if error_details is None:
-            exc_type, exc_value, exc_tb = sys.exc_info()
-        else:
-            if hasattr(error_details, "exc_info"):  # e.g., sys
-                #exc_type, exc_value, exc_tb = error_details.exc_info()
-                exc_info_obj = cast(sys, error_details)
-                exc_type, exc_value, exc_tb = exc_info_obj.exc_info()
-            elif isinstance(error_details, BaseException):
-                exc_type, exc_value, exc_tb = type(error_details), error_details, error_details.__traceback__
-            else:
-                exc_type, exc_value, exc_tb = sys.exc_info()
-
-        # Walk to the last frame to report the most relevant location
-        last_tb = exc_tb
-        while last_tb and last_tb.tb_next:
-            last_tb = last_tb.tb_next
-
-        self.file_name = last_tb.tb_frame.f_code.co_filename if last_tb else "<unknown>"
-        self.lineno = last_tb.tb_lineno if last_tb else -1
-        self.error_message = norm_msg
-
-        # Full pretty traceback (if available)
-        if exc_type and exc_tb:
-            self.traceback_str = ''.join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        # Generate formatted traceback once
+        if exc_type and exc_value:
+            self.traceback_str = "".join(
+                traceback.format_exception(exc_type, exc_value, exc_tb)
+            )
         else:
             self.traceback_str = ""
 
-        super().__init__(self.__str__())
+        # Pass only the core message to the base Exception class
+        super().__init__(self.error_message)
 
     def __str__(self):
-        # Compact, logger-friendly message (no leading spaces)
-        base = f"Error in [{self.file_name}] at line [{self.lineno}] | Message: {self.error_message}"
+        # Professional, structured format
+        header = (
+            f"[{self.__class__.__name__}] in {self.file_name} at line {self.lineno}"
+        )
+        body = f"Message: {self.error_message}"
+
         if self.traceback_str:
-            return f"{base}\nTraceback:\n{self.traceback_str}"
-        return base
+            return f"{header}\n{body}\n{'-'*20}\n{self.traceback_str}{'-'*20}"
+        return f"{header} | {body}"
 
     def __repr__(self):
-        return f"DocumentPortalException(file={self.file_name!r}, line={self.lineno}, message={self.error_message!r})"
-
-
-# if __name__ == "__main__":
-#     # Demo-1: generic exception -> wrap
-#     try:
-#         a = 1 / 0
-#     except Exception as e:
-#         raise DocumentPortalException("Division failed", e) from e
-
-#     # Demo-2: still supports sys (old pattern)
-#     # try:
-#     #     a = int("abc")
-#     # except Exception as e:
-#     #     raise DocumentPortalException(e, sys)
+        return (
+            f"{self.__class__.__name__}(file={self.file_name!r}, "
+            f"line={self.lineno}, message={self.error_message!r})"
+        )
