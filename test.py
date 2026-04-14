@@ -155,6 +155,7 @@ from src.document_ingestion.data_ingestion import DocHandler  # Your PDFHandler 
 
 ## testing for multidoc chat
 import sys
+import time
 from pathlib import Path
 from src.document_ingestion.data_ingestion import ChatIngestor
 from src.multidocchat.retrieval import ConversationalRAG
@@ -163,7 +164,7 @@ from src.multidocchat.retrieval import ConversationalRAG
 def test_document_ingestion_and_rag():
     try:
         test_files = [
-            "data/multi_doc_chat/Simple PDF 2.0 file.pdf",
+            "/Users/2099070/Documents/Cognizant/LLMOps Batch 1/data/multi_doc_chat/ad095e35.pdf",
         ]
 
         uploaded_files = []

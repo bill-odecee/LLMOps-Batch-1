@@ -40,6 +40,7 @@ contextualize_question_prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
 ])
 
+
 # Prompt for answering based on context
 context_qa_prompt = ChatPromptTemplate.from_messages([
     ("system", (
@@ -50,6 +51,7 @@ context_qa_prompt = ChatPromptTemplate.from_messages([
     MessagesPlaceholder("chat_history"),
     ("human", "{input}"),
 ])
+
 
 # Central dictionary for all the prompt templates in the project, keyed by a unique name. This allows for easy retrieval and reuse of prompts across different modules.
 PROMPT_REGISTRY = {

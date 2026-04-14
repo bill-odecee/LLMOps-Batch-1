@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Any
 from langchain_core.messages import BaseMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_community.vectorstores import FAISS
 
 from utils.model_loader import Modelloader
@@ -47,53 +48,6 @@ class ConversationalRAG:
         except Exception as e:
             log.error("Error initializing ConversationalRAG", error=str(e))
             raise DocumentPortalException("Error initializing ConversationalRAG", e) from e
-
-    def _load_llm(self):
-        try:
-            llm = Modelloader().load_llm()
-            if not llm:
-                raise ValueError("LLM could not be loaded")
-            log.info("LLM loaded successfully", session_id=self.session_id)
-            return llm
-        except Exception as e:
-            log.error("Failed to load LLM", error=str(e))
-            raise DocumentPortalException("LLM loading error in ConversationalRAG", e) from e
-
-    @staticmethod
-    def _format_docs(docs) -> str:
-        return "\n\n".join(getattr(d, "page_content", str(d)) for d in docs)
-
-    def _build_lcel_chain(self):
-        try:
-            if self.retriever is None:
-                raise DocumentPortalException("No Retriever set before building LCEL chain.")
-            
-            # 1) Rewrite user question with chat history context
-            question_rewriter = (
-                {"input": itemgetter("input"), "chat_history": itemgetter("chat_history")}
-                | self.contextualize_prompt
-                | self.llm
-                | StrOutputParser()
-            )
-
-            # 2) Retrieve relevant documents based on rewritten question
-            retrieve_docs = question_rewriter | self.retriever | self._format_docs
-            # 3) Answer question using retrieved docs and chat history
-            self.chain = (
-                {
-                    "context": retrieve_docs,
-                    "input": itemgetter("input"),
-                    "chat_history": itemgetter("chat_history")
-                    }
-                | self.qa_prompt
-                | self.llm
-                | StrOutputParser()
-            )
-
-        except Exception as e:
-            log.error("Error building LCEL chain", error=str(e), session=self.session_id)
-            raise DocumentPortalException("Error building LCEL chain", e) from e
-
 
     #----------Public Methods/APIs----------#
 
@@ -167,3 +121,54 @@ class ConversationalRAG:
             raise DocumentPortalException("Error invoking LCEL chain", e) from e
 
     
+
+#----INTERNALS----
+
+
+    def _load_llm(self):
+        try:
+            llm = Modelloader().load_llm()
+            if not llm:
+                raise ValueError("LLM could not be loaded")
+            log.info("LLM loaded successfully", session_id=self.session_id)
+            return llm
+        except Exception as e:
+            log.error("Failed to load LLM", error=str(e))
+            raise DocumentPortalException("LLM loading error in ConversationalRAG", e) from e
+
+    @staticmethod
+    def _format_docs(docs) -> str:
+        return "\n\n".join(getattr(d, "page_content", str(d)) for d in docs)
+
+    def _build_lcel_chain(self):
+        try:
+            if self.retriever is None:
+                raise DocumentPortalException("No retriever set before building chain", sys)
+
+            # 1) Rewrite user question with chat history context
+            question_rewriter = (
+                {"input": itemgetter("input"), "chat_history": itemgetter("chat_history")}
+                | self.contextualize_prompt
+                | self.llm
+                | StrOutputParser()
+            )
+
+            # 2) Retrieve docs for rewritten question
+            retrieve_docs = question_rewriter | self.retriever | self._format_docs
+
+            # 3) Answer using retrieved context + original input + chat history
+            self.chain = (
+                {
+                    "context": retrieve_docs,
+                    "input": itemgetter("input"),
+                    "chat_history": itemgetter("chat_history"),
+                }
+                | self.qa_prompt
+                | self.llm
+                | StrOutputParser()
+            )
+
+            log.info("LCEL graph built successfully", session_id=self.session_id)
+        except Exception as e:
+            log.error("Failed to build LCEL chain", error=str(e), session_id=self.session_id)
+            raise DocumentPortalException("Failed to build LCEL chain", sys)
