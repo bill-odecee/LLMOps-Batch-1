@@ -1,14 +1,15 @@
 {
   "family": "documentportaltd",
   "networkMode": "awsvpc",
-  "executionRoleArn": "arn:aws:iam::581429707896:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::040396448340:role/llmops1/ecsTaskExecutionRole",
+  
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "8192",
   "containerDefinitions": [
     {
       "name": "document-portal-container",
-      "image": "581429707896.dkr.ecr.ap-southeast-2.amazonaws.com/documentportaljs",
+      "image": "040396448340.dkr.ecr.ap-southeast-2.amazonaws.com/documentportal-llmops1",
       "cpu": 1024,
       "essential": true,
       "portMappings": [
@@ -29,7 +30,7 @@
       "secrets": [
         {
           "name": "API_KEYS",
-          "valueFrom": "arn:aws:secretsmanager:ap-southeast-2:581429707896:secret:Google_API_Key-mQJ5HS"
+          "valueFrom": "arn:aws:secretsmanager:ap-southeast-2:040396448340:secret:Google_API_Key-mQJ5HS"
         }
         
       ],
@@ -45,3 +46,5 @@
     }
   ]
 }
+
+
