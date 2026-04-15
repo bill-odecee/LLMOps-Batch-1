@@ -25,6 +25,10 @@
         {
           "name": "ENV",
           "value": "production"
+        },
+        {
+          "name": "PYTHONPATH",
+          "value": "/app"
         }
       ],
       "secrets": [
