@@ -1,14 +1,14 @@
 {
   "family": "documentportaltd",
   "networkMode": "awsvpc",
-  "executionRoleArn": "arn:aws:iam::040396448340:role/llmops1/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::040396448340:role/ecsTaskExecutionRole",
   
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "8192",
   "containerDefinitions": [
     {
-      "name": "document-portal-container",
+      "name": "documentportal-llmops1",
       "image": "040396448340.dkr.ecr.ap-southeast-2.amazonaws.com/documentportal-llmops1",
       "cpu": 1024,
       "essential": true,
@@ -17,7 +17,7 @@
           "containerPort": 8080,
           "hostPort": 8080,
           "protocol": "tcp",
-          "name": "document-portal-container-8080-tcp",
+          "name": "documentportal-llmops1-8080-tcp",
           "appProtocol": "http"
         }
       ],
@@ -29,8 +29,8 @@
       ],
       "secrets": [
         {
-          "name": "API_KEYS",
-          "valueFrom": "arn:aws:secretsmanager:ap-southeast-2:040396448340:secret:Google_API_Key-mQJ5HS"
+          "name": "API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-southeast-2:040396448340:secret:API_KEY-ywQQXy"
         }
         
       ],
@@ -39,7 +39,7 @@
         "options": {
           "awslogs-group": "/ecs/documentportaltd",
           "awslogs-region": "ap-southeast-2",
-          "awslogs-stream-prefix": "ecs",
+          "awslogs-stream-prefix": "documentportal-llmops1",
           "awslogs-create-group": "true"
         }
       }
